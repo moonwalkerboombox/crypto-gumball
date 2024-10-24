@@ -1,332 +1,265 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        body {
-            min-height: 100vh;
-            background: #f8fafc;
-            font-family: system-ui, -apple-system, sans-serif;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
+body {
+    min-height: 100vh;
+    background: #f8fafc;
+    font-family: system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
 
-        .container {
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-            padding: 2rem;
-            background: white;
-            border-radius: 24px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
+.container {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
 
-        .logo {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+.logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-        .tagline {
-            font-size: 1.25rem;
-            color: #64748b;
-            margin-bottom: 2rem;
-            line-height: 1.5;
-        }
+.tagline {
+    font-size: 1.25rem;
+    color: #64748b;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
 
-        .machine {
-            width: 300px;
-            height: 500px;
-            background: linear-gradient(145deg, #ff4444, #cc3333);
-            border-radius: 150px 150px 20px 20px;
-            position: relative;
-            overflow: hidden;
-            margin: 0 auto 2rem;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-        }
+.machine {
+    width: 300px;
+    height: 500px;
+    background: linear-gradient(145deg, #ff4444, #cc3333);
+    border-radius: 150px 150px 20px 20px;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto 2rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
 
-        .globe {
-            position: absolute;
-            top: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 250px;
-            height: 250px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 50%;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-        }
+.globe {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 250px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
 
-        .gumballs {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            animation: rotate 20s linear infinite;
-        }
+.gumballs {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    animation: rotate 20s linear infinite;
+}
 
-        .gumball {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, white, var(--color));
-            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1);
-        }
+.gumball {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, white, var(--color));
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1);
+}
 
-        .price {
-            position: absolute;
-            bottom: 130px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 2rem;
-            font-weight: bold;
-            color: #6366f1;
-        }
+.price {
+    position: absolute;
+    bottom: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+}
 
-        .coin-slot {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 0.75rem 1.5rem;
-            background: #6366f1;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
+.coin-slot {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
 
-        .coin-slot:hover {
-            background: #4f46e5;
-            transform: translateX(-50%) translateY(-2px);
-        }
+.coin-slot:hover {
+    background: #4f46e5;
+    transform: translateX(-50%) translateY(-2px);
+}
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
 
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 24px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-        }
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
 
-        .payment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
-        }
+.modal-content h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+}
 
-        .crypto-button {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 1rem;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
+.payment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
 
-        .crypto-button:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
+.crypto-button {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-        .crypto-icon {
-            width: 32px;
-            height: 32px;
-            background: white;
-            border-radius: 50%;
-            padding: 0.5rem;
-        }
+.crypto-button:hover {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
 
-        .crypto-name {
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
+.crypto-icon {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 50%;
+    padding: 0.5rem;
+}
 
-        .popular-tag {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            background: #dbeafe;
-            color: #2563eb;
-            border-radius: 6px;
-        }
+.crypto-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
 
-        .copyright {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-        }
+.popular-tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background: #dbeafe;
+    color: #2563eb;
+    border-radius: 6px;
+}
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+.copyright {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
 
-        @media (max-width: 640px) {
-            .container {
-                padding: 1rem;
-            }
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
-            .logo {
-                font-size: 2rem;
-            }
+/* Mobile Responsiveness */
+@media (max-width: 640px) {
+    .container {
+        padding: 1rem;
+    }
 
-            .tagline {
-                font-size: 1rem;
-                margin-bottom: 1.5rem;
-            }
+    .logo {
+        font-size: 2rem;
+    }
 
-            .machine {
-                width: 240px;
-                height: 400px;
-            }
+    .tagline {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
 
-            .globe {
-                width: 200px;
-                height: 200px;
-                top: 40px;
-            }
+    .machine {
+        width: 240px;
+        height: 400px;
+    }
 
-            .gumball {
-                width: 32px;
-                height: 32px;
-            }
+    .globe {
+        width: 200px;
+        height: 200px;
+        top: 40px;
+    }
 
-            .price {
-                bottom: 100px;
-                font-size: 1.5rem;
-            }
+    .gumball {
+        width: 32px;
+        height: 32px;
+    }
 
-            .coin-slot {
-                bottom: 60px;
-                padding: 0.5rem 1rem;
-            }
+    .price {
+        bottom: 100px;
+        font-size: 1.5rem;
+    }
 
-            .payment-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="logo">
-            Crypto Gumball
-        </div>
-        <div class="tagline">
-            Get a unique NFT gumball!<br>
-            Each one is a special piece in your digital collection
-        </div>
-        <div class="machine">
-            <div class="globe">
-                <div class="gumballs" id="gumballs"></div>
-            </div>
-            <div class="price">25¢</div>
-            <button class="coin-slot" onclick="showPaymentModal()">
-                Insert Coin →
-            </button>
-        </div>
-        <div class="copyright">
-            © 2024 Crypto Gumball. All rights reserved.
-        </div>
-    </div>
+    .coin-slot {
+        bottom: 60px;
+        padding: 0.5rem 1rem;
+    }
 
-    <div class="modal" id="paymentModal">
-        <div class="modal-content">
-            <h2>Choose Payment Method</h2>
-            <div class="payment-grid">
-                <button class="crypto-button" onclick="processPayment('BTC')">
-                    <img src="/api/placeholder/32/32" alt="BTC" class="crypto-icon"/>
-                    <span class="crypto-name">BTC</span>
-                    <span class="popular-tag">Popular</span>
-                </button>
-                <button class="crypto-button" onclick="processPayment('ETH')">
-                    <img src="/api/placeholder/32/32" alt="ETH" class="crypto-icon"/>
-                    <span class="crypto-name">ETH</span>
-                    <span class="popular-tag">Popular</span>
-                </button>
-                <button class="crypto-button" onclick="processPayment('DOGE')">
-                    <img src="/api/placeholder/32/32" alt="DOGE" class="crypto-icon"/>
-                    <span class="crypto-name">DOGE</span>
-                    <span class="popular-tag">Popular</span>
-                </button>
-                <button class="crypto-button" onclick="processPayment('SOL')">
-                    <img src="/api/placeholder/32/32" alt="SOL" class="crypto-icon"/>
-                    <span class="crypto-name">SOL</span>
-                </button>
-                <button class="crypto-button" onclick="processPayment('USDT')">
-                    <img src="/api/placeholder/32/32" alt="USDT" class="crypto-icon"/>
-                    <span class="crypto-name">USDT</span>
-                    <span class="popular-tag">Stable</span>
-                </button>
-            </div>
-            <button class="coin-slot" onclick="closePaymentModal()">Cancel</button>
-        </div>
-    </div>
+    .payment-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
-    <script>
-        const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#14b8a6', '#f59e0b', '#84cc16'];
-        const gumballsContainer = document.getElementById('gumballs');
+/* Loading Animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #6366f1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
 
-        for (let i = 0; i < 12; i++) {
-            const gumball = document.createElement('div');
-            gumball.className = 'gumball';
-            gumball.style.setProperty('--color', colors[Math.floor(Math.random() * colors.length)]);
-            gumball.style.left = Math.random() * 170 + 'px';
-            gumball.style.top = Math.random() * 170 + 'px';
-            gumballsContainer.appendChild(gumball);
-        }
-
-        function showPaymentModal() {
-            document.getElementById('paymentModal').style.display = 'flex';
-        }
-
-        function closePaymentModal() {
-            document.getElementById('paymentModal').style.display = 'none';
-        }
-
-        function processPayment(currency) {
-            alert(`Processing ${currency} payment for your NFT Gumball!`);
-            closePaymentModal();
-        }
-    </script>
-</body>
-</html>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
