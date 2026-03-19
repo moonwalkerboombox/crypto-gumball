@@ -1,1 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Random Source Drum Pads</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --danger: #fb7185;
+      --ok: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #1e293b, var(--bg) 50%);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      min-height: 100dvh;
+      padding: 12px;
+    }
+    .app {
+      max-width: 820px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+    .panel {
+      background: linear-gradient(180deg, #111827, #0b1220);
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 10px 24px rgb(0 0 0 / 0.25);
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: 0.02em;
+    }
+    .sub { color: var(--muted); font-size: 0.86rem; margin-top: 6px; }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    button, input {
+      border-radius: 10px;
+      border: 1px solid #475569;
+      padding: 10px 12px;
+      color: var(--text);
+      background: var(--panel-2);
+      font-weight: 600;
+    }
+    button { cursor: pointer; }
+    button:active { transform: translateY(1px); }
+    .recording { border-color: var(--danger); color: #fecdd3; }
+    .playing { border-color: var(--ok); color: #bbf7d0; }
+    .pads {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .pad {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      border: 1px solid #475569;
+      background: linear-gradient(180deg, #374151, #1f2937);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      padding: 8px;
+      font-size: 0.76rem;
+    }
+    .pad strong { font-size: 0.95rem; }
+    .pad small { color: var(--muted); line-height: 1.2; }
+    .pad.active {
+      background: linear-gradient(180deg, #06b6d4, #0e7490);
+      border-color: #67e8f9;
+      color: #062a34;
+    }
+    .transport {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .sources {
+      display: grid;
+      gap: 8px;
+      max-height: 35dvh;
+      overflow: auto;
+      margin-top: 10px;
+      padding-right: 2px;
+    }
+    .source {
+      background: #0b1220;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 0.82rem;
+    }
+    .source a { color: var(--accent); }
+    .meta { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); font-size: 0.78rem; }
+    .wide { grid-column: 1 / -1; }
+    @media (min-width: 740px) {
+      .controls { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .wide { grid-column: span 2; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="panel">
+      <h1>16-Pad Random Drum Machine</h1>
+      <p class="sub">Mobile-first MPC-style pads. Tap to play. Record up to <strong>16 bars</strong> at 8th-note quantization.</p>
 
+      <div class="controls">
+        <button id="recordBtn">● Record</button>
+        <button id="playBtn">▶ Play</button>
+        <button id="clearBtn">Clear Pattern</button>
+        <button id="randomizeBtn">Randomize Sounds</button>
+        <button id="resetSoundsBtn">Reset Default Sounds</button>
+        <button id="shareBtn">Save/Share Block</button>
+        <label class="wide">BPM
+          <input id="bpmInput" type="number" min="60" max="180" value="110" />
+        </label>
+      </div>
+
+      <div id="pads" class="pads"></div>
+      <div class="transport">
+        <div id="position">Bar 1/16 · Step 1/8</div>
+        <div id="status">Idle</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h1>Pad Sources</h1>
+      <p class="sub">Every pad shows its original source. Tap links to open source page.</p>
+      <div id="sourceList" class="sources"></div>
+    </section>
+  </main>
+
+  <script>
+    const EIGHTH_PER_BAR = 8;
+    const BARS = 16;
+    const TOTAL_STEPS = EIGHTH_PER_BAR * BARS;
+
+    const SAMPLE_POOL = [
+      { id: 'bd_1', name: 'Kick 1', url: 'https://tonejs.github.io/audio/drum-samples/CR78/kick.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'sn_1', name: 'Snare 1', url: 'https://tonejs.github.io/audio/drum-samples/CR78/snare.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'hhc_1', name: 'Closed Hat', url: 'https://tonejs.github.io/audio/drum-samples/CR78/hihat.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'hho_1', name: 'Open Hat', url: 'https://tonejs.github.io/audio/drum-samples/CR78/hihat-open.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'cp_1', name: 'Clap', url: 'https://tonejs.github.io/audio/drum-samples/CR78/clap.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'rim_1', name: 'Rimshot', url: 'https://tonejs.github.io/audio/drum-samples/CR78/rimshot.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'tom_1', name: 'Tom', url: 'https://tonejs.github.io/audio/drum-samples/CR78/tom.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'cow_1', name: 'Cowbell', url: 'https://tonejs.github.io/audio/drum-samples/CR78/cowbell.mp3', source: 'Tone.js CR78 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'bd_2', name: 'Kick 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/kick.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'sn_2', name: 'Snare 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/snare.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'hhc_2', name: 'Closed Hat 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/hihat.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'hho_2', name: 'Open Hat 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/hihat-open.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'cp_2', name: 'Clap 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/clap.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'rim_2', name: 'Rimshot 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/rimshot.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'tom_2', name: 'Tom 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/tom.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'cow_2', name: 'Cowbell 2', url: 'https://tonejs.github.io/audio/drum-samples/TR808/cowbell.mp3', source: 'Tone.js TR808 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'bd_3', name: 'Kick 3', url: 'https://tonejs.github.io/audio/drum-samples/707/kick.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'sn_3', name: 'Snare 3', url: 'https://tonejs.github.io/audio/drum-samples/707/snare.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'hhc_3', name: 'Closed Hat 3', url: 'https://tonejs.github.io/audio/drum-samples/707/hihat.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'hho_3', name: 'Open Hat 3', url: 'https://tonejs.github.io/audio/drum-samples/707/hihat-open.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'clp_3', name: 'Clap 3', url: 'https://tonejs.github.io/audio/drum-samples/707/clap.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'perc_3', name: 'Perc', url: 'https://tonejs.github.io/audio/drum-samples/707/tambourine.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'tom_3', name: 'Tom 3', url: 'https://tonejs.github.io/audio/drum-samples/707/tom.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' },
+      { id: 'ride_3', name: 'Ride', url: 'https://tonejs.github.io/audio/drum-samples/707/ride.mp3', source: 'Tone.js 707 Kit', sourceUrl: 'https://tonejs.github.io/audio/drum-samples/' }
+    ];
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const pattern = Array.from({ length: 16 }, () => Array(TOTAL_STEPS).fill(false));
+    let pads = [];
+    let selectedSamples = [];
+    let isRecording = false;
+    let isPlaying = false;
+    let currentStep = 0;
+    let transport = null;
+
+    const el = {
+      pads: document.getElementById('pads'),
+      sourceList: document.getElementById('sourceList'),
+      position: document.getElementById('position'),
+      status: document.getElementById('status'),
+      recordBtn: document.getElementById('recordBtn'),
+      playBtn: document.getElementById('playBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      randomizeBtn: document.getElementById('randomizeBtn'),
+      resetSoundsBtn: document.getElementById('resetSoundsBtn'),
+      shareBtn: document.getElementById('shareBtn'),
+      bpmInput: document.getElementById('bpmInput')
+    };
+
+    function shuffle(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function getStepMs() {
+      const bpm = Math.min(180, Math.max(60, Number(el.bpmInput.value) || 110));
+      el.bpmInput.value = bpm;
+      return (60 / bpm / 2) * 1000;
+    }
+
+    async function loadSampleBuffer(url) {
+      const res = await fetch(url);
+      const buf = await res.arrayBuffer();
+      return audioCtx.decodeAudioData(buf);
+    }
+
+    async function assignSamples(sampleIds = null) {
+      const map = new Map(SAMPLE_POOL.map(s => [s.id, s]));
+      const chosen = sampleIds?.length === 16
+        ? sampleIds.map(id => map.get(id)).filter(Boolean)
+        : shuffle(SAMPLE_POOL).slice(0, 16);
+
+      if (chosen.length !== 16) {
+        selectedSamples = shuffle(SAMPLE_POOL).slice(0, 16);
+      } else {
+        selectedSamples = chosen;
+      }
+
+      el.status.textContent = 'Loading random sources…';
+      const buffers = await Promise.all(selectedSamples.map(s => loadSampleBuffer(s.url).catch(() => null)));
+
+      pads = selectedSamples.map((sample, i) => ({
+        ...sample,
+        label: `Pad ${i + 1}`,
+        buffer: buffers[i]
+      }));
+
+      renderPads();
+      renderSources();
+      persistBlock();
+      el.status.textContent = 'Ready';
+    }
+
+    function playPad(index, velocity = 1) {
+      const pad = pads[index];
+      if (!pad?.buffer) return;
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = pad.buffer;
+
+      const gain = audioCtx.createGain();
+      gain.gain.value = Math.max(0.2, Math.min(1, velocity));
+      source.connect(gain).connect(audioCtx.destination);
+
+      const duration = Math.min(0.25, pad.buffer.duration); // roughly 8th-note style short hit
+      source.start(0, 0, duration);
+
+      const padBtn = el.pads.children[index];
+      padBtn.classList.add('active');
+      setTimeout(() => padBtn.classList.remove('active'), 120);
+
+      if (isRecording) pattern[index][currentStep] = true;
+    }
+
+    function renderPads() {
+      el.pads.innerHTML = '';
+      pads.forEach((pad, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'pad';
+        btn.innerHTML = `<strong>${pad.label}</strong><small>${pad.name}</small>`;
+        btn.addEventListener('pointerdown', async () => {
+          if (audioCtx.state === 'suspended') await audioCtx.resume();
+          playPad(i);
+        });
+        el.pads.appendChild(btn);
+      });
+    }
+
+    function renderSources() {
+      el.sourceList.innerHTML = '';
+      pads.forEach((pad, i) => {
+        const item = document.createElement('div');
+        item.className = 'source';
+        item.innerHTML = `
+          <div><strong>Pad ${i + 1}</strong>: ${pad.name}</div>
+          <div class="meta">
+            <span>${pad.source}</span>
+            <a href="${pad.sourceUrl}" target="_blank" rel="noopener noreferrer">Open source ↗</a>
+          </div>
+        `;
+        el.sourceList.appendChild(item);
+      });
+    }
+
+    function updatePosition() {
+      const bar = Math.floor(currentStep / EIGHTH_PER_BAR) + 1;
+      const stepInBar = (currentStep % EIGHTH_PER_BAR) + 1;
+      el.position.textContent = `Bar ${bar}/16 · Step ${stepInBar}/8`;
+    }
+
+    function tick() {
+      for (let p = 0; p < 16; p++) {
+        if (pattern[p][currentStep]) playPad(p, 0.85);
+      }
+      currentStep = (currentStep + 1) % TOTAL_STEPS;
+      updatePosition();
+    }
+
+    function startPlayback() {
+      if (isPlaying) return;
+      isPlaying = true;
+      el.playBtn.classList.add('playing');
+      el.playBtn.textContent = '■ Stop';
+      el.status.textContent = isRecording ? 'Recording + Playing' : 'Playing';
+      tick();
+      transport = setInterval(tick, getStepMs());
+    }
+
+    function stopPlayback() {
+      isPlaying = false;
+      clearInterval(transport);
+      transport = null;
+      el.playBtn.classList.remove('playing');
+      el.playBtn.textContent = '▶ Play';
+      el.status.textContent = isRecording ? 'Recording (waiting)' : 'Stopped';
+    }
+
+    function toggleRecord() {
+      isRecording = !isRecording;
+      el.recordBtn.classList.toggle('recording', isRecording);
+      el.recordBtn.textContent = isRecording ? '● Recording' : '● Record';
+      if (isRecording && !isPlaying) startPlayback();
+      if (!isRecording) el.status.textContent = isPlaying ? 'Playing' : 'Idle';
+    }
+
+    function clearPattern() {
+      for (let p = 0; p < 16; p++) pattern[p].fill(false);
+      el.status.textContent = 'Pattern cleared';
+      persistBlock();
+    }
+
+    function persistBlock() {
+      const save = {
+        sampleIds: pads.map(p => p.id),
+        pattern,
+        bpm: Number(el.bpmInput.value) || 110
+      };
+      localStorage.setItem('drumBlock', JSON.stringify(save));
+    }
+
+    function encodeStateForUrl() {
+      const state = {
+        sampleIds: pads.map(p => p.id),
+        pattern,
+        bpm: Number(el.bpmInput.value) || 110
+      };
+      return btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    }
+
+    function decodeStateFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const encoded = params.get('block');
+      if (!encoded) return null;
+      try {
+        return JSON.parse(decodeURIComponent(escape(atob(encoded))));
+      } catch {
+        return null;
+      }
+    }
+
+    async function loadSavedOrShared() {
+      const shared = decodeStateFromUrl();
+      if (shared) {
+        await assignSamples(shared.sampleIds);
+        if (Array.isArray(shared.pattern)) {
+          for (let p = 0; p < 16; p++) {
+            if (Array.isArray(shared.pattern[p])) {
+              for (let s = 0; s < TOTAL_STEPS; s++) {
+                pattern[p][s] = Boolean(shared.pattern[p][s]);
+              }
+            }
+          }
+        }
+        if (shared.bpm) el.bpmInput.value = shared.bpm;
+        el.status.textContent = 'Loaded shared block';
+        return;
+      }
+
+      const local = localStorage.getItem('drumBlock');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          await assignSamples(parsed.sampleIds);
+          if (parsed.bpm) el.bpmInput.value = parsed.bpm;
+          if (Array.isArray(parsed.pattern)) {
+            for (let p = 0; p < 16; p++) {
+              if (Array.isArray(parsed.pattern[p])) {
+                for (let s = 0; s < TOTAL_STEPS; s++) pattern[p][s] = Boolean(parsed.pattern[p][s]);
+              }
+            }
+          }
+          el.status.textContent = 'Loaded last local block';
+          return;
+        } catch {}
+      }
+
+      await assignSamples();
+    }
+
+    el.recordBtn.addEventListener('click', toggleRecord);
+    el.playBtn.addEventListener('click', () => isPlaying ? stopPlayback() : startPlayback());
+    el.clearBtn.addEventListener('click', clearPattern);
+    el.randomizeBtn.addEventListener('click', async () => {
+      await assignSamples();
+      el.status.textContent = 'Pads randomized';
+    });
+    el.resetSoundsBtn.addEventListener('click', async () => {
+      await assignSamples(SAMPLE_POOL.slice(0, 16).map(s => s.id));
+      el.status.textContent = 'Sounds reset to default block';
+    });
+    el.shareBtn.addEventListener('click', async () => {
+      persistBlock();
+      const url = `${location.origin}${location.pathname}?block=${encodeURIComponent(encodeStateForUrl())}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        el.status.textContent = 'Share URL copied to clipboard';
+      } catch {
+        prompt('Copy this URL to share your random source block:', url);
+      }
+    });
+    el.bpmInput.addEventListener('change', () => {
+      persistBlock();
+      if (isPlaying) {
+        clearInterval(transport);
+        transport = setInterval(tick, getStepMs());
+      }
+    });
+
+    loadSavedOrShared();
+    updatePosition();
+  </script>
+</body>
+</html>
